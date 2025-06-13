@@ -1,0 +1,14 @@
+{
+  "title": {
+    "message": "Docusaurus 更新日誌",
+    "description": "The title for the blog used in SEO"
+  },
+  "description": {
+    "message": "隨時掌握每個版本的新功能動態",
+    "description": "The description for the blog used in SEO"
+  },
+  "sidebar.title": {
+    "message": "更新日誌",
+    "description": "The label for the left sidebar"
+  }
+}

@@ -1,0 +1,122 @@
+---
+title: How I Converted Profilo to Docusaurus in Under 2 Hours
+authors: [abernathyca]
+tags: [profilo, adoption]
+---
+
+> 「Joel和我當時正在討論建立網站的事，覺得如果能隨專案一起發布就太好了。所以我決定挑戰自己加入Docusaurus支援。整個過程只花了一個半小時左右。我會發一個PR給你們看看效果，基本上你們之後編輯文檔的工作流程就是直接改這些Markdown檔案。」
+>
+> ——發給Profilo團隊的訊息
+
+這是我們使用Docusaurus建立[Profilo](https://facebookincubator.github.io/profilo/)網站的簡短歷程。
+
+Profilo是一個用於從生產環境收集Android性能追蹤的函式庫，[今年初剛發布](https://code.fb.com/android/profilo-understanding-app-performance-in-the-wild/)。專案[開源在GitHub](https://github.com/facebookincubator/profilo/tree/802042f90f990998a272387e371b893af52465b8)時，只有[零星幾份Markdown文件](https://github.com/facebookincubator/profilo/tree/802042f90f990998a272387e371b893af52465b8/docs)說明功能，沒有任何展示品牌形象或標誌的網站。我的任務就是將這些現有文件和標誌轉化成正式網站。
+
+<!--truncate-->
+
+一般而言，用Docusaurus建立網站的流程如下：
+
+1. 使用Docusaurus腳本生成網站模板
+1. 根據需求自訂模板檔案（如網站配色、專案設定等）
+1. 建立網站內容：
+   1. 添加文檔與相關素材
+   1. 修改Docusaurus預設的首頁
+   1. 配置網站導航設定檔
+1. 發布網站並設定後續更新機制
+
+由於已有現成Markdown文件，我不需要從頭生成內容，只要確保Docusaurus能通過添加必要元資料來處理這些文件。大部分工作會集中在調整Docusaurus的預設設定。
+
+## 實施步驟概覽
+
+以下是網站建置的主要步驟，設計相關細節將在後續章節說明。
+
+**設計與配色：**
+
+1. 從設計師處取得所有標誌規格，其中.favicon格式需自行製作
+1. 使用http://paletton.com/工具搭配標誌主色調，制定初步網站配色方案
+
+**網站初始化：**
+
+1. Fork專案[Profilo倉庫](https://github.com/facebookincubator/profilo/)並克隆到本地
+1. 按照[安裝指南](https://v1.docusaurus.io/docs/en/installation.html)初始化Docusaurus網站
+1. 刪除預設生成的`docs-examples-from-docusaurus`和`website/blog-examples-from-docusaurus`目錄（直接使用現有文檔，暫無部落格需求）
+
+**內容製作：**
+
+1. 為 `docs` 資料夾中的現有 Markdown 檔案添加元數據，例如：
+
+   ```md
+   ---
+   id: architecture
+   title: 架構
+   sidebar_label: 架構
+   ---
+   ```
+
+2. 將標誌資產添加到 `website/static/img` 資料夾。
+3. 修改 `website/pages/en/index.js`（首頁）以突出 Profilo 的功能。
+4. 修改 `website/core/Footer.js`（頁尾）以簡化 Profilo 的頁尾。
+5. 編輯 `website/siteConfig.js`（網站配置文件）以指定先前選擇的主色和次色。
+6. 修改 `website/sidebars.json`（指定側邊欄導航的文件）。列出所有文檔並根據添加到 Markdown 檔案的元數據進行自定義。
+7. 編輯網站配置文件以指定 GitHub 屬性、標誌圖片、標題連結和網站連結。
+8. 在此階段全程本地測試網站。（我從 `website` 資料夾運行 `yarn start` 以啟動伺服器。）
+
+**反饋和審查變更：**
+
+1. 向項目發送了一個[拉取請求](https://github.com/facebookincubator/profilo/pull/6)。
+2. 在設計師對我選擇的顏色表示驚訝後更新了顏色（我不是設計師）。
+3. 更新了顏色並更新了拉取請求。
+4. 拉取請求隨後被接受並[合併](https://github.com/facebookincubator/profilo/commit/6ad033aaf5a7d54e6d842f45a5bccd051a8e45ad)。耶！
+
+**網站發布：**
+
+1. 通過從命令行運行 Docusaurus 發布腳本推送了第一個網站版本：
+
+   ```bash
+   USE_SSH=true \
+     GIT_USER=caabernathy \
+     CURRENT_BRANCH=master \
+     yarn run publish-gh-pages
+   ```
+
+2. 使用[提供的 Docusaurus 說明](https://v1.docusaurus.io/docs/en/publishing.html#automating-deployments-using-continuous-integration)配置了 CircleCI。對此有兩個拉取請求，[第一個](https://github.com/facebookincubator/profilo/pull/8)用於初始配置，[第二個](https://github.com/facebookincubator/profilo/pull/12)確保 CircleCI 僅在 master 分支變更時觸發（感謝 Joel Marcey！）。
+
+最終網站發布在 https://facebookincubator.github.io/profilo/。從初始拉取請求階段到完成花了 1.5 小時，另外花了半小時左右回應審查反饋並發布網站。
+
+## 設計
+
+這是第一個拉取請求發出時初始網站的外觀：
+
+![網站的首頁，主色為相當明亮且飽和的紅色，與 Profilo 標誌顏色非常接近，使得導航欄中的標誌難以辨認](/img/profilo_blog_post_website_initial.png)
+
+內容創建的大部分時間花在選擇與給定標誌搭配合理的顏色上。這些顏色是設計師反饋的良好起點。我使用 Photoshop 對標誌的不同部分進行取樣。
+
+![在 Photoshop 中選擇顏色，背景是 Profilo 標誌和主要工作區，前景是一個顏色選擇對話框，選中了一個紅色調](/img/profilo_blog_post_photoshop_color_picker.png)
+
+然後，我將顏色的 RGB 表示作為基準顏色輸入到 [Paletton](http://paletton.com/)。該網站隨後為我提供了各種顏色選項，通過編輯 Docusaurus 網站配置文件在網站上進行嘗試。
+
+![使用 Paletton 從選定的紅色調生成完整調色板。左側是一個顯示所有色調的色輪，右側是一個顯示各種紅色調的方塊](/img/profilo_blog_post_palette_website_color_picker.png)
+
+選擇的主色和次色是設計師反饋的良好起點。
+
+此外，我們也對 Docusaurus 生成的預設網站進行了修改。這些變更主要集中在簡化頁尾，以及為 Profilo 創建一個客製化的登陸頁面，用於列出該專案的功能特色。
+
+以下是網站最終呈現的樣貌：
+
+![網站首頁，主色調改為較深的紅色，使標誌和主色標題文字都能清晰辨識。](/img/profilo_blog_post_website_final.png)
+
+這是一個展示核心內容的範例頁面（此處為「快速入門」頁面）：
+
+![文件頁面，左側四分之一為邊欄，其餘空間顯示主要內容。部分文字使用主色調，主體內容運用多種排版格式，包括粗體、列表和程式碼區塊。](/img/profilo_blog_post_website_final_docs.png)
+
+此畫面同時展示了透過編輯 `website/sidebars.json` 設定的邊欄結構。
+
+最後，我無需費心處理響應式設計——Docusaurus 已內建此功能！
+
+![首頁與範例文件頁面的行動裝置截圖。版面會自動調整以符合行動瀏覽體驗，文件邊欄隱藏在按鈕後方。](/img/profilo_blog_post_android_ios.png)
+
+## 最終心得
+
+Profilo 的工程師們很高興發現他們無需改變現有工作流程來更新內容，仍可繼續使用 Markdown 檔案作業。未來新增文件時此優勢依然存在，不過若需調整邊欄導航，可能仍需進行部分設定變更。
+
+Docusaurus 提供的基礎架構能輕鬆將 Markdown 檔案轉換為運作中的網站。儘管該專案僅有三份文件，此舉仍為 Profilo 帶來更專業的形象。因此，投入短暫時間完成這項工作絕對物超所值。

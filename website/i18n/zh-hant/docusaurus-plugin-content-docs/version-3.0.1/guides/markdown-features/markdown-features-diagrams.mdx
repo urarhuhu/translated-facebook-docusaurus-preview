@@ -1,0 +1,85 @@
+---
+id: diagrams
+title: Diagrams
+description: Writing diagrams with Mermaid
+slug: /markdown-features/diagrams
+---
+
+# 圖表繪製
+
+您可以使用 [Mermaid](https://mermaid-js.github.io/mermaid/) 程式碼區塊來渲染圖表。
+
+## 安裝方式 {#installation}
+
+```bash npm2yarn
+npm install --save @docusaurus/theme-mermaid
+```
+
+在您的 `docusaurus.config.js` 中新增插件 `@docusaurus/theme-mermaid` 並將 `markdown.mermaid` 設為 `true` 以啟用 Mermaid 功能。
+
+```js title="docusaurus.config.js"
+export default {
+  markdown: {
+    mermaid: true,
+  },
+  themes: ['@docusaurus/theme-mermaid'],
+};
+```
+
+## 使用方式 {#usage}
+
+新增標記為 `mermaid` 語言的程式碼區塊：
+
+````md title="Example Mermaid diagram"
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
+````
+
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
+
+更多關於 Mermaid 語法的資訊，請參閱 [Mermaid 語法文件](https://mermaid-js.github.io/mermaid/#/./n00b-syntaxReference)。
+
+## 主題設定 {#theming}
+
+您可以在 `docusaurus.config.js` 的 `themeConfig` 中設定 `mermaid.theme` 值來變更圖表的深色與淺色主題，可分別設定亮暗模式的主題。
+
+```js title="docusaurus.config.js"
+export default {
+  themeConfig: {
+    mermaid: {
+      theme: {light: 'neutral', dark: 'forest'},
+    },
+  },
+};
+```
+
+有關 Mermaid 圖表主題設定的詳細資訊，請參閱 [Mermaid 主題文件](https://mermaid-js.github.io/mermaid/#/theming)。
+
+## Mermaid 配置 {#configuration}
+
+`mermaid.options` 中的選項將直接傳遞給 `mermaid.initialize`：
+
+```js title="docusaurus.config.js"
+export default {
+  themeConfig: {
+    mermaid: {
+      options: {
+        maxTextSize: 50,
+      },
+    },
+  },
+};
+```
+
+可用的配置選項請參閱 [Mermaid 配置文件](https://mermaid-js.github.io/mermaid/#/./Setup?id=configuration) 與 [Mermaid 配置類型定義](https://github.com/mermaid-js/mermaid/blob/master/packages/mermaid/src/config.type.ts)。

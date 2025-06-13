@@ -1,0 +1,106 @@
+---
+description: How to keep a reasonable bundle size while ensuring sufficient browser support.
+---
+
+# 瀏覽器支援
+
+Docusaurus 允許站點通過 [browserslist 配置](https://github.com/browserslist/browserslist) 定義支援的瀏覽器列表。
+
+## 目的 {#purpose}
+
+網站需要在向後兼容性和打包體積之間取得平衡。由於舊版瀏覽器不支援現代 API 或語法，實現相同功能需要更多程式碼。
+
+例如，您可能使用 [可選鏈結語法](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining)：
+
+```js
+const value = obj?.prop?.val;
+```
+
+...但該語法僅被 2020 年後發布的瀏覽器版本識別。為兼容早期瀏覽器版本，在為生產環境構建站點時，我們的 JS 加載器會將程式碼轉譯為更冗長的語法：
+
+```js
+var _obj, _obj$prop;
+
+const value =
+  (_obj = obj) === null || _obj === void 0
+    ? void 0
+    : (_obj$prop = _obj.prop) === null || _obj$prop === void 0
+    ? void 0
+    : _obj$prop.val;
+```
+
+然而這會懲罰其他所有用戶——29 個字符的代碼行變成 168 個字符（增加了 6 倍！），導致站點加載時間延長（實際情況會好些，因為使用的名稱會更短）。作為權衡，JS 加載器僅將語法轉譯到瀏覽器列表定義的所有版本都能支援的程度。
+
+預設情況下，瀏覽器列表通過 `package.json` 文件中的根級 `browserslist` 字段提供。
+
+:::warning
+
+在舊版瀏覽器上，編譯輸出會使用不支援（過於新穎）的 JS 語法，導致 React 初始化失敗，最終呈現僅有 HTML/CSS 而無 JS 的靜態網站。
+
+:::
+
+## 預設值 {#default-values}
+
+使用預設經典模板初始化的站點，其 `package.json` 中包含以下配置：
+
+```json title="package.json"
+{
+  "name": "docusaurus",
+  // ...
+  // highlight-start
+  "browserslist": {
+    "production": [">0.5%", "not dead", "not op_mini all"],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+  // highlight-end
+  // ...
+}
+```
+
+用自然語言解釋，生產環境支援的瀏覽器需滿足：
+
+- 市場份額超過 0.5%；且
+- 過去 24 個月有官方支援或更新（即非「已淘汰」瀏覽器）；且
+- 非 Opera Mini。
+
+而開發環境使用的瀏覽器為：
+
+- Chrome、Firefox 或 Safari 的最新版本。
+
+您可以使用 `browserslist` CLI「評估」任何配置以獲取實際列表：
+
+```bash
+npx browserslist --env="production"
+```
+
+輸出結果為生產環境支援的所有瀏覽器。以下是 2022 年 1 月的輸出範例：
+
+```text
+and_chr 96
+and_uc 12.12
+chrome 96
+chrome 95
+chrome 94
+edge 96
+firefox 95
+firefox 94
+ie 11
+ios_saf 15.2
+ios_saf 15.0-15.1
+ios_saf 14.5-14.8
+ios_saf 14.0-14.4
+ios_saf 12.2-12.5
+opera 82
+opera 81
+safari 15.1
+safari 14.1
+safari 13.1
+```
+
+## 延伸閱讀 {#read-more}
+
+您可查閱 [browserslist 文檔](https://github.com/browserslist/browserslist/blob/main/README.md) 獲取更多規範說明，特別是關於 [查詢值](https://github.com/browserslist/browserslist/blob/main/README.md#queries) 和 [最佳實踐](https://github.com/browserslist/browserslist/blob/main/README.md#best-practices) 的部分。

@@ -1,0 +1,110 @@
+---
+title: Docusaurus 3.3
+authors: [slorber]
+tags: [release]
+image: ./img/social-card.png
+date: 2024-05-03
+---
+
+我們很高興宣布 **Docusaurus 3.3** 正式發布。
+
+升級過程應該很簡單。我們的[發布流程](/community/release-process)遵循[語意化版本控制](https://semver.org/)。次要版本更新不會包含任何破壞性變更。
+
+![Docusaurus 部落格文章社交卡片](./img/social-card.png)
+
+<!--truncate-->
+
+import BrowserWindow from '@site/src/components/BrowserWindow';
+import IframeWindow from '@site/src/components/BrowserWindow/IframeWindow';
+
+## 重點更新
+
+### 為 React 19 做準備
+
+React 核心團隊近期[發布了首個 **React 19 beta 版本**](https://react.dev/blog/2024/04/25/react-19)，同時也[公布了升級指南及 **React v18.3 版本**](https://react.dev/blog/2024/04/25/react-19-upgrade-guide)，其中包含新的警告訊息以幫助我們在升級至 React 19 前識別潛在問題。
+
+Docusaurus v3 依賴於 React `18.x`。當初始化新的 Docusaurus 站點時，將使用最新的 React `18.3` 版本。如果您選擇升級依賴項或重新生成套件管理器鎖定文件，情況也是如此。
+
+目前發現 **Docusaurus 存在一些需要修復的警告訊息**，特別是在任何頁面加載和導航時，開發者控制台會立即顯示以下警告：
+
+> 警告：LoadableComponent 使用了舊版的 contextTypes API，該 API 已不再支援並將在下個主要版本中移除。請改用 React.createContext() 配合靜態 contextType。
+
+在 [#10079](https://github.com/facebook/docusaurus/pull/10079) 中，我們讓 Docusaurus 做好了迎接 React 19 的準備。我們修復了所有遇到的 React 18.3 警告。如果我們遺漏了任何警告，請不要猶豫[向我們回報新發現的警告](https://github.com/facebook/docusaurus/issues/10099)，同時也請通知其他 Docusaurus 第三方插件作者。
+
+### `createSitemapItems`
+
+在 [#10083](https://github.com/facebook/docusaurus/pull/10083) 中，我們為站點地圖插件引入了新的彈性鉤子 `createSitemapItems()`。這讓使用者能夠通過自定義邏輯來創建/過濾/轉換/增強站點地圖項目。
+
+```ts
+export default {
+  presets: [
+    [
+      '@docusaurus/preset-classic',
+      {
+        sitemap: {
+          // highlight-start
+          createSitemapItems: async ({
+            defaultCreateSitemapItems,
+            ...params
+          }) => {
+            const items = await defaultCreateSitemapItems(params);
+            return items.filter((item) => !item.url.includes('/tags/'));
+          },
+          // highlight-end
+        },
+      },
+    ],
+  ],
+};
+```
+
+### 頁面插件改進
+
+Docusaurus 的[頁面插件](/docs/api/plugins/@docusaurus/plugin-content-pages)在功能可用性方面長期落後於文檔和部落格插件。
+
+在 [#10032](https://github.com/facebook/docusaurus/pull/10032) 中，我們通過添加幾個缺失的頁面插件 API 來規範化每個核心內容插件的選項，這些 API 與編輯 URL 和顯示在 Markdown 頁面底部的最後更新元數據相關。
+
+```js
+export default {
+  presets: [
+    [
+      '@docusaurus/preset-classic',
+      {
+        pages: {
+          // highlight-start
+          editUrl:
+            'https://github.com/facebook/docusaurus/tree/main/website/src/pages',
+          editLocalizedFiles: true,
+          showLastUpdateAuthor: true,
+          showLastUpdateTime: true,
+          // highlight-end
+        },
+      },
+    ],
+  ],
+};
+```
+
+<IframeWindow url="/examples/markdownPageExample" />
+
+:::note[僅適用於 Markdown 頁面]
+
+這些新插件選項僅適用於 Markdown 頁面，對於您通過 JSX 完全控制佈局的 React 頁面沒有影響。
+
+:::
+
+## 其他變更
+
+其他值得注意的變更包括：
+
+- [#10064](https://github.com/facebook/docusaurus/pull/10064): 新增網站配置選項 `siteConfig.markdown.anchors.maintainCase`
+- [#9767](https://github.com/facebook/docusaurus/pull/9767): 新增 `docusaurus deploy --target-dir` 選項
+- [#10042](https://github.com/facebook/docusaurus/pull/10042): 新增（實驗性）插件 API: `route.props`
+- [#10060](https://github.com/facebook/docusaurus/pull/10060): 優化 App 入口點，避免導航時不必要的重新渲染
+- [#10080](https://github.com/facebook/docusaurus/pull/10080): `<Admonition>` 元件現在可不需標題/圖標正常渲染
+- [#10091](https://github.com/facebook/docusaurus/pull/10091): `<Tabs>` 的 props 現在可覆蓋預設值
+- [#10090](https://github.com/facebook/docusaurus/pull/10090): `docusaurus serve` 在 `/baseUrl/` 路徑前綴下運作更佳
+- [#10070](https://github.com/facebook/docusaurus/pull/10070): 新增 `pt-BR` 語系缺少的主題翻譯
+- [#10025](https://github.com/facebook/docusaurus/pull/10025): 文件側邊欄項目標籤現在會影響文件分頁標籤
+
+查閱 **[3.3.0 變更記錄](/changelog/3.3.0)** 以獲取完整的變更清單。

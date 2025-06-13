@@ -1,0 +1,110 @@
+# Canary 版本
+
+```mdx-code-block
+import {
+  VersionsProvider,
+  CanaryVersion,
+  StableVersion,
+  InsertIfCanaryVersionUnknown,
+  InsertIfCanaryVersionKnown,
+  PackageJSONDiff,
+  PublishTime,
+} from "@site/src/components/Versions";
+
+<VersionsProvider>
+```
+
+Docusaurus 設有 Canary 版本發佈機制。
+
+此機制允許您在拉取請求合併後，立即**測試尚未正式發佈的新功能**。
+
+這是**向維護者提供反饋**的有效方式，可確保新實現的功能符合預期運作。
+
+:::note
+
+在生產環境使用 Canary 版本看似有風險，但實際上並非如此。
+
+Canary 版本已通過所有自動化測試，且 Docusaurus 官方網站本身就在生產環境中使用此版本。
+
+:::
+
+```mdx-code-block
+<InsertIfCanaryVersionUnknown>
+```
+
+:::warning
+
+下方顯示的 Canary 版本號**可能並非最新版**。請前往 [npm 頁面](https://www.npmjs.com/package/@docusaurus/core?activeTab=versions)查閱實際版本名稱。
+
+:::
+
+```mdx-code-block
+</InsertIfCanaryVersionUnknown>
+<InsertIfCanaryVersionKnown>
+```
+
+:::tip
+
+下方顯示的 Canary 版本號直接從 npm 獲取且**保持最新狀態**。您可直接在 package.json 中使用這些版本號。
+
+:::
+
+```mdx-code-block
+</InsertIfCanaryVersionKnown>
+```
+
+## Canary npm 分發標籤
+
+任何提交至 `main` 分支的程式碼變更，持續整合系統將在 10 分鐘內透過 `@canary` npm 分發標籤發佈 Canary 版本。
+
+您可在 [npm](https://www.npmjs.com/package/@docusaurus/core?activeTab=versions) 查看當前分發標籤：
+
+- `latest`: 穩定版本 (當前: <StableVersion />)
+- `canary`: Canary 版本 (<CanaryVersion />)
+
+:::tip
+
+請確認使用最新的 Canary 版本並檢查發佈時間（有時發佈流程可能失敗）。<PublishTime />
+
+:::
+
+:::note
+
+Canary 版本遵循 `0.0.0-commitNumber` 命名慣例。
+
+:::
+
+## 使用 Canary 版本
+
+請取用 [canary npm 分發標籤](https://www.npmjs.com/package/@docusaurus/core?activeTab=versions) 下發佈的最新版本 (<CanaryVersion />)。
+
+將此版本號套用至您 `package.json` 中所有 `@docusaurus/*` 相依套件：
+
+```mdx-code-block
+<PackageJSONDiff />
+```
+
+接著重新安裝相依套件並啟動您的網站：
+
+```bash npm2yarn
+npm install
+npm start
+```
+
+您亦可透過指令列升級 `@docusaurus/*` 套件：
+
+```bash npm2yarn
+npm install --save-exact @docusaurus/core@canary @docusaurus/preset-classic@canary
+```
+
+:::warning
+
+請確保包含所有 `@docusaurus/*` 套件。
+
+對於 Canary 版本，建議使用確切版本號而非語意化版本範圍（避免使用 `^` 前綴）。
+
+:::
+
+```mdx-code-block
+</VersionsProvider>
+```

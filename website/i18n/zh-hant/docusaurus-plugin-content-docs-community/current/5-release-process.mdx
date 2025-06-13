@@ -1,0 +1,174 @@
+# 發布流程
+
+讓我們來了解 Docusaurus 如何處理**版本控制、發布與重大變更**。
+
+:::info
+
+此主題對於高度客製化的網站尤其重要，因為它們在升級時可能會遇到困難。
+
+:::
+
+## 語意化版本控制 {#semantic-versioning}
+
+Docusaurus 的版本控制基於 `major.minor.patch` 模式，並遵循[語意化版本控制](https://semver.org/)。
+
+遵循語意化版本控制有多重重要性：
+
+- 只要您僅使用[公開 API](/community/release-process#public-api-surface)，它**保證次要版本升級的簡易性**
+- 它遵循前端生態系的慣例
+- 新的主要版本是徹底記錄重大變更的契機
+- 新的主要/次要版本是透過部落格文章傳達新功能的機會
+
+### 主要版本 {#major-versions}
+
+`major` 版本號碼會在**每次重大變更**時遞增。
+
+每當發布新的主要版本時，我們會發布：
+
+- 一篇部落格文章，包含功能亮點、主要錯誤修正、**重大變更與升級指南**
+- 一份詳盡的變更日誌條目
+
+:::tip
+
+閱讀我們的[公開 API 範圍](#public-api-surface)章節，以清楚了解我們視為重大變更的內容。
+
+:::
+
+### 次要版本 {#minor-versions}
+
+`minor` 版本號碼會在每次重要的向後相容變更時遞增。
+
+每當發布新的次要版本時，我們會發布：
+
+- 一篇部落格文章，列出功能亮點與主要錯誤修正
+- 一份詳盡的變更日誌條目
+
+:::tip
+
+只要您僅使用我們的[公開 API 範圍](#public-api-surface)，您應該能夠快速完成升級！
+
+:::
+
+### 修補版本 {#patch-versions}
+
+`patch` 版本號碼會在錯誤修正發布時遞增。
+
+每當發布新的修補版本時，我們會發布：
+
+- 一份詳盡的變更日誌條目
+
+## 版本 {#versions}
+
+```mdx-code-block
+import {
+  CurrentMajorVersionNumber,
+  StableMajorBranchLink,
+  MainBranchLink,
+} from "@site/src/components/Versions";
+```
+
+Docusaurus 團隊採用簡單的開發流程，同一時間僅專注於單一主要版本與單一 Git 分支：
+
+- **Docusaurus {CurrentMajorVersionNumber}**：**穩定**版本，位於 <MainBranchLink/> 分支。
+
+:::note[我們如何發布下一個版本]
+
+當我們準備好發布 **Docusaurus {CurrentMajorVersionNumber + 1}** 時，我們將：
+
+- 建立 <StableMajorBranchLink/> 分支
+- 將重大變更合併至 <MainBranchLink/> 分支
+- 直接從 <MainBranchLink/> 分支發布該新版本
+
+:::
+
+:::warning[安全性修正政策]
+
+新的穩定版本發布後，前一個穩定版本將繼續獲得**重大安全性問題**的支援，為期**3個月**。
+
+實際上，我們會將安全性修正回溯至 <StableMajorBranchLink/> 分支。除此之外，所有功能將被凍結，非關鍵性錯誤將不會被修正。
+
+建議您在此時間範圍內升級至新的穩定版本。
+
+:::
+
+## 公開 API 範圍 {#public-api-surface}
+
+Docusaurus 承諾遵循語意化版本控制。這意味著每當 Docusaurus 公開 API 發生變更並破壞向後相容性時，我們將遞增 `major` 版本號碼。
+
+:::tip
+
+Docusaurus 保證公開 API 在 `minor` 版本間的向後相容性。除非您使用內部 API，否則 `minor` 版本升級應該相當容易。
+
+:::
+
+我們將概述哪些內容屬於公開 API 範圍。
+
+### 核心公開 API {#core-public-api}
+
+✅ 我們的公開 API 包含：
+
+- Docusaurus 設定檔
+- Docusaurus 客戶端 API
+- Docusaurus CLI 工具
+- 預設選項
+- 插件選項
+- 插件生命週期 API
+- 主題設定
+- 核心插件路由元件屬性
+- `@docusaurus/types` TypeScript 型別
+  - 我們仍保留強化型別限制的權利（這可能導致型別檢查失敗）。
+
+❌ 我們的公開 API **不包含**：
+
+- Docusaurus 設定檔中的 `future` 欄位
+- 所有以 `experimental_` 或 `unstable_` 為前綴的功能
+- 所有以 `v<主版本號>_` 為前綴的功能（如 `v6_`、`v7_` 等）
+
+:::tip
+
+對於非主題 API，任何文件記載的 API 都視為公開（且會保持穩定）；任何未記載的 API 都視為內部 API。
+
+:::
+
+API 的「穩定」意味著：當您僅升級 Docusaurus 的修訂版或次版本號，且未進行其他變更時，執行 `docusaurus start` 或 `docusaurus build` 不應拋出錯誤。
+
+### 主題公開 API {#theming-public-api}
+
+Docusaurus 擁有極具彈性的主題系統：
+
+- 可使用自訂 CSS
+- 可[替換](/docs/swizzling)任何 React 主題元件
+
+此系統也隱含創造了極大的 API 介面。為了能快速演進並改進 Docusaurus，我們無法保證向後相容性。
+
+✅ 我們的主題公開 API 包含：
+
+- [主題類別名稱](/docs/styling-layout#theme-class-names)
+- [Infima](/docs/styling-layout#styling-your-site-with-infima) 類別名稱與 CSS 變數
+- [可安全替換](/docs/swizzling#what-is-safe-to-swizzle)的 React 元件
+- 主題使用者體驗
+- 瀏覽器支援範圍
+
+:::tip
+
+您可能無法透過此公開 API 實現所有網站客製化需求。
+
+若遇此情況，請[回報您的客製化用例](https://github.com/facebook/docusaurus/discussions/5468)，我們將研議如何擴展公開 API。
+
+:::
+
+❌ 我們的主題公開 API **不包含**：
+
+- DOM 結構
+- 帶有雜湊後綴的 CSS 模組類別名稱（通常透過 `[class*='myClassName']` 選擇器定位）
+- [不安全或禁止替換](/docs/swizzling#what-is-safe-to-swizzle)的 React 元件
+- 從 `@docusaurus/theme-common/internal` 導入的 React 元件
+- 主題的精確視覺呈現
+
+:::note
+
+當[替換](/docs/swizzling)安全元件時，您可能會遇到從 `@docusaurus/theme-common`（不含 `/internal` 子路徑）導入未記載 API 的元件。
+
+我們仍會維持這些 API 的向後相容性（因此標記為「安全」），但不鼓勵直接使用。
+
+:::

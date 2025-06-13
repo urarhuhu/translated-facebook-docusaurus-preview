@@ -1,0 +1,22 @@
+{
+  "version.label": {
+    "message": "下一個",
+    "description": "The label for version current"
+  },
+  "sidebar.community.link.Changelog": {
+    "message": "更新日誌",
+    "description": "The label for link Changelog in sidebar community, linking to /changelog"
+  },
+  "sidebar.community.link.Showcase": {
+    "message": "案例展示",
+    "description": "The label for link Showcase in sidebar community, linking to /showcase"
+  },
+  "sidebar.community.link.Feature Requests": {
+    "message": "功能請求",
+    "description": "The label for link Feature Requests in sidebar community, linking to /feature-requests"
+  },
+  "sidebar.community.link.Chat with us on Discord": {
+    "message": "在 Discord 上與我們聊天",
+    "description": "The label for link Chat with us on Discord in sidebar community, linking to https://discord.gg/docusaurus"
+  }
+}

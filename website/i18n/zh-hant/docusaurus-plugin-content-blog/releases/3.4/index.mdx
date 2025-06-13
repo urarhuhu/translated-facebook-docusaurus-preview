@@ -1,0 +1,129 @@
+---
+title: Docusaurus 3.4
+authors: [slorber]
+tags: [release]
+image: ./img/social-card.png
+date: 2024-05-31
+---
+
+我們很高興宣布 **Docusaurus 3.4** 正式發布。
+
+升級過程應該很簡單。我們的[發布流程](/community/release-process)遵循[語意化版本控制](https://semver.org/)。次要版本更新不會包含任何破壞性變更。
+
+![Docusaurus 部落格文章社交卡片](./img/social-card.png)
+
+<!--truncate-->
+
+## 重點更新
+
+### 標籤檔案
+
+文件與部落格插件原本就支援在 front matter 中使用 `tags` 屬性來分類相關內容。但直接在 front matter 中宣告標籤並非總是理想的做法。
+
+透過 [#10137](https://github.com/facebook/docusaurus/pull/10137)，您現在可以在 `tags.yml` 檔案中預先定義標籤列表：
+
+```yml title="blog/tags.yml"
+tag1:
+  label: 'Tag 1'
+  description: 'Tag 1 description'
+  permalink: /tag-1-permalink
+
+tag2:
+  label: 'Tag 2'
+  description: 'Tag 2 description'
+  permalink: /tag-2-permalink
+```
+
+這些預定義標籤可用於部落格或文件檔案的 front matter 中：
+
+```md title="blog/2024-05-31-my-blog-post.md"
+---
+tags: [tag1, tag2]
+---
+
+# Title
+
+Content
+```
+
+:::tip[保持標籤使用一致性]
+
+使用新的 `onInlineTags: 'throw'` 插件選項來強制使用預定義標籤，防止貢獻者創建新的非預期標籤。
+
+:::
+
+### 哈希路由 - 實驗性功能
+
+透過 [9859](https://github.com/facebook/docusaurus/pull/9859)，我們新增了一個**實驗性**的哈希路由配置選項，這對於透過 `file://` 協議在本機開啟網站進行**離線瀏覽**非常有用。
+
+```tsx title="docusaurus.config.js"
+export default {
+  future: {
+    experimental_router: 'hash',
+  },
+};
+```
+
+:::warning
+
+**不建議**將此模式用於透過網頁伺服器部署的站點。
+
+:::
+
+啟用此模式後，Docusaurus 將退出靜態網站渲染，轉而構建一個客戶端單頁應用程式，其中所有路由都會加上 `/#/` 前綴。系統會生成單一的 `index.html` 檔案，使用者只需點擊該檔案即可透過瀏覽器的 `file://` 協議在本機開啟。這使得將 Docusaurus 站點打包成 `.zip` 檔案分發成為可能，讀者無需在電腦上安裝複雜的軟體，僅需使用網頁瀏覽器即可離線瀏覽內容。
+
+![Docusaurus 哈希路由 - 使用 file:// 協議進行本機瀏覽](./img/hash.png)
+
+試試瀏覽我們使用哈希路由構建的 Docusaurus 示範站點：
+
+- [Docusaurus 官網 - 哈希路由線上部署版](https://facebook.github.io/docusaurus/#/)
+- [Docusaurus 官網 - 哈希路由可下載的 GitHub 構建產物](https://github.com/facebook/docusaurus/actions/workflows/build-hash-router.yml)
+
+:::caution[實驗性功能]
+
+此功能目前處於**實驗階段**。如果您試用了此功能，請[在此處](https://github.com/facebook/docusaurus/issues/3825)告訴我們您的使用體驗。
+
+:::
+
+### 站點儲存 - 實驗性功能
+
+Docusaurus 使用瀏覽器的 `localStorage` API 來持久化 UI 狀態。
+
+但有時儲存空間會被同一網域下的多個站點「共享」，導致**儲存鍵衝突**。這種情況通常發生在兩種情境：
+
+- 同時開發多個 `http://localhost:3000` 站點時
+- 同一網域下托管多個站點時：例如 `https://example.com/site1/` 和 `https://example.com/site2/`
+
+為此，我們新增了一個**實驗性**的 `siteStorage` 配置選項：
+
+```tsx
+export default {
+  future: {
+    experimental_storage: {
+      type: 'localStorage',
+      namespace: true,
+    },
+  },
+};
+```
+
+當設置 `namespace: true` 時，我們會為所有儲存鍵添加哈希後綴，使其基於 `config.url` 和 `config.baseUrl` 成為當前站點專屬。例如，`theme` 儲存鍵會變成 `theme-x6f`。您也可以自定義後綴 `namespace: 'suffix'`。此外，我們也支援使用 `type: 'sessionStorage'` 來替代預設的 `localStorage`。
+
+:::caution[實驗性功能]
+
+此功能目前處於**實驗階段**。若您嘗試使用，請於[此處](https://github.com/facebook/docusaurus/pull/10121)回報使用體驗。
+
+:::
+
+## 其他變更
+
+其他值得注意的變更包括：
+
+- [#10151](https://github.com/facebook/docusaurus/pull/10151): 新增土庫曼語 (tk) 主題翻譯
+- [#10111](https://github.com/facebook/docusaurus/pull/10111): 新增保加利亞語 (bg) 主題翻譯  
+- [#10168](https://github.com/facebook/docusaurus/pull/10168): 修復多個長期未解決的 Markdown 連結解析錯誤
+- [#10178](https://github.com/facebook/docusaurus/pull/10178): `/search` 頁面現在會遵循 `contextualSearch: false` 設定
+- [#10118](https://github.com/facebook/docusaurus/pull/10118): 修正文件生成索引分類卡描述中的錯誤複數形式
+- [#10130](https://github.com/facebook/docusaurus/pull/10130): 修復因結尾斜線導致錨點檢查器誤報的問題
+
+完整變更清單請參閱 **[3.4.0 版本更新日誌](/changelog/3.4.0)**。

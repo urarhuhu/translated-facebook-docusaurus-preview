@@ -1,0 +1,210 @@
+---
+id: math-equations
+description: Writing LaTeX Math Equations
+slug: /markdown-features/math-equations
+---
+
+# 數學方程式
+
+import BrowserWindow from '@site/src/components/BrowserWindow';
+
+可使用 [KaTeX](https://katex.org) 渲染數學方程式。
+
+## 使用方法 {#usage}
+
+詳情請參閱 [KaTeX](https://katex.org) 文件。
+
+### 行內方程式 {#inline}
+
+在 `$` 符號之間寫入 LaTeX 方程式來呈現行內數學式：
+
+```latex
+Let $f\colon[a,b]\to\R$ be Riemann integrable. Let $F\colon[a,b]\to\R$ be
+$F(x)=\int_{a}^{x} f(t)\,dt$. Then $F$ is continuous, and at all $x$ such that
+$f$ is continuous at $x$, $F$ is differentiable at $x$ with $F'(x)=f(x)$.
+```
+
+<BrowserWindow>
+
+Let $f\colon[a,b] \to \R$ be Riemann integrable. Let $F\colon[a,b]\to\R$ be $F(x)=
+\int_{a}^{x} f(t)\,dt$. Then $F$ is continuous, and at all $x$ such that $f$ is continuous at $x$, $F$ is differentiable at $x$ with $F'(x)=f(x)$.
+
+</BrowserWindow>
+
+### 區塊方程式 {#blocks}
+
+對於方程式區塊或顯示模式，使用換行和 `$$` 符號：
+
+```latex
+$$
+I = \int_0^{2\pi} \sin(x)\,dx
+$$
+```
+
+<BrowserWindow>
+
+$$
+I = \int_0^{2\pi} \sin(x)\,dx
+$$
+
+</BrowserWindow>
+
+## 配置設定 {#configuration}
+
+要啟用 KaTeX，需安裝 `remark-math` 和 `rehype-katex` 插件。
+
+```bash npm2yarn
+npm install --save remark-math@3 rehype-katex@5 hast-util-is-element@1.1.0
+```
+
+:::warning
+
+請使用完全相同的版本。最新版本與 Docusaurus 2 不相容。
+
+:::
+
+在 `docusaurus.config.js` 中導入插件：
+
+```js
+const math = require('remark-math');
+const katex = require('rehype-katex');
+```
+
+將其加入內容插件或預設選項（通常是 `@docusaurus/preset-classic` 的文件選項）：
+
+```js
+remarkPlugins: [math],
+rehypePlugins: [katex],
+```
+
+在配置檔的 `stylesheets` 中加入 KaTeX CSS：
+
+```js
+stylesheets: [
+  {
+    href: 'https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css',
+    type: 'text/css',
+    integrity:
+      'sha384-odtC+0UGzzFL/6PNoE8rX/SPcQDXBJ+uRepguP4QkPCm2LBxH3FA3y+fKSiJ+AmM',
+    crossorigin: 'anonymous',
+  },
+],
+```
+
+整體修改如下：
+
+```js title="docusaurus.config.js"
+// highlight-start
+const math = require('remark-math');
+const katex = require('rehype-katex');
+// highlight-end
+
+module.exports = {
+  title: 'Docusaurus',
+  tagline: 'Build optimized websites quickly, focus on your content',
+  presets: [
+    [
+      '@docusaurus/preset-classic',
+      {
+        docs: {
+          path: 'docs',
+          // highlight-start
+          remarkPlugins: [math],
+          rehypePlugins: [katex],
+          // highlight-end
+        },
+      },
+    ],
+  ],
+  // highlight-start
+  stylesheets: [
+    {
+      href: 'https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css',
+      type: 'text/css',
+      integrity:
+        'sha384-odtC+0UGzzFL/6PNoE8rX/SPcQDXBJ+uRepguP4QkPCm2LBxH3FA3y+fKSiJ+AmM',
+      crossorigin: 'anonymous',
+    },
+  ],
+  // highlight-end
+};
+```
+
+## 自托管 KaTeX 資源 {#self-hosting-katex-assets}
+
+從 CDN 載入樣式表、字型和 JavaScript 函式庫是熱門資源的最佳實踐，可減少需自托管的資源量。若您偏好自托管 `katex.min.css`（含必要 KaTeX 字型），可從 [KaTeX GitHub 發佈頁](https://github.com/KaTeX/KaTeX/releases)下載最新版本，解壓後將 `katex.min.css` 和 `fonts` 目錄（僅需 `.woff2` 字型）複製到網站的 `static` 目錄，並在 `docusaurus.config.js` 中將樣式表的 `href` 從 CDN URL 替換為本地路徑（例如 `/katex/katex.min.css`）。
+
+```js title="docusaurus.config.js"
+module.exports = {
+  stylesheets: [
+    {
+      href: '/katex/katex.min.css',
+      type: 'text/css',
+    },
+  ],
+};
+```
+
+## 升級 rehype-katex 至建議版本以上 {#upgrading-rehype-katex-beyond-recommended-version}
+
+:::tip
+
+僅在確實需要 $\KaTeX$ 的最新功能時才使用最新版本。多數用戶會發現舊版本同樣適用。
+
+:::
+
+最新版 `rehype-katex`（從 `v6.0.0` 開始）已改用 JavaScript 的新模組系統 ES Modules，Docusaurus 尚未正式支援。但可透過非同步配置創建器動態導入 `rehype-katex`，Docusaurus 將調用此創建函式並等待其返回配置物件。
+
+```js title="docusaurus.config.js"
+async function createConfig() {
+  // ES Modules are imported with `import()` instead of `require()`, and are imported asynchronously
+  // highlight-next-line
+  const katex = (await import('rehype-katex')).default;
+  return {
+    // ...
+  };
+}
+```
+
+此情況下，整體配置修改如下：
+
+```js title="docusaurus.config.js"
+// highlight-next-line
+const math = require('remark-math');
+
+async function createConfig() {
+  // highlight-next-line
+  const katex = (await import('rehype-katex')).default;
+  return {
+    title: 'Docusaurus',
+    tagline: 'Build optimized websites quickly, focus on your content',
+    presets: [
+      [
+        '@docusaurus/preset-classic',
+        {
+          docs: {
+            path: 'docs',
+            // highlight-start
+            remarkPlugins: [math],
+            rehypePlugins: [katex],
+            // highlight-end
+          },
+        },
+      ],
+    ],
+    // highlight-start
+    stylesheets: [
+      {
+        href: 'https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css',
+        type: 'text/css',
+        integrity:
+          'sha384-MlJdn/WNKDGXveldHDdyRP1R4CTHr3FeuDNfhsLPYrq2t0UBkUdK2jyTnXPEK1NQ',
+        crossorigin: 'anonymous',
+      },
+    ],
+    // highlight-end
+  };
+}
+
+module.exports = createConfig;
+```

@@ -1,0 +1,104 @@
+---
+sidebar_position: 8
+slug: /api/plugins/@docusaurus/plugin-ideal-image
+---
+
+# 📦 plugin-ideal-image
+
+import APITable from '@site/src/components/APITable';
+
+Docusaurus 插件，用於生成近乎理想的圖片（響應式、懶加載及低品質佔位圖）。
+
+:::info
+
+預設情況下，此插件在開發環境中處於**非啟用狀態**，以便您始終能查看完整尺寸的圖片。若需調試理想圖片行為，可將 [`disableInDev`](#disableInDev) 選項設為 `false`。
+
+:::
+
+## 安裝 {#installation}
+
+```bash npm2yarn
+npm install --save @docusaurus/plugin-ideal-image
+```
+
+## 使用方式 {#usage}
+
+本插件僅支援 PNG 和 JPG 格式。
+
+```jsx
+import Image from '@theme/IdealImage';
+import thumbnail from './path/to/img.png';
+
+// your React code
+<Image img={thumbnail} />
+
+// or
+<Image img={require('./path/to/img.png')} />
+```
+
+:::warning
+
+此插件會註冊一個 [Webpack 加載器](https://webpack.js.org/loaders/)，改變導入/require 圖片的類型：
+
+- 之前：`string`
+- 之後：`{preSrc: string, src: import("@theme/IdealImage").SrcImage}`
+
+:::
+
+:::warning[針對 pnpm 使用者]
+
+自 [pnpm 10](https://github.com/pnpm/pnpm/releases/tag/v10.0.0) 起，執行 `pnpm install` 預設不會運行依賴項的安裝腳本。需額外配置 pnpm（參見[此問題](https://github.com/lovell/sharp/issues/4343)）才能正確安裝圖片縮放依賴項 `sharp`，例如：
+
+```json title="package.json"
+{
+  "pnpm": {
+    "onlyBuiltDependencies": ["fsevents"]
+  }
+}
+```
+
+## 配置選項 {#configuration}
+
+可接受字段：
+
+```mdx-code-block
+<APITable>
+```
+
+| 選項 | 類型 | 預設值 | 說明 |
+| --- | --- | --- | --- |
+| `name` | `string` | `ideal-img/[name].[hash:hex:7].[width].[ext]` | 輸出檔案的命名模板。 |
+| `sizes` | `number[]` | _原始尺寸_ | 指定所有要使用的寬度。若指定尺寸超過原始圖片寬度，則使用後者（即圖片不會放大）。 |
+| `size` | `number` | _原始尺寸_ | 指定單一目標寬度；若超過原始圖片寬度則使用後者（即圖片不會放大） |
+| `min` | `number` |  | 作為手動指定 `sizes` 的替代方案，可設定 `min`、`max` 和 `steps` 自動生成尺寸區間。 |
+| `max` | `number` |  | 參見上方 `min` 說明 |
+| `steps` | `number` | `4` | 設定在 `min` 和 `max` 之間（含）生成的圖片數量 |
+| `quality` | `number` | `85` | JPEG 壓縮品質 |
+| `disableInDev` | `boolean` | `true` | 設為 `false` 可在開發模式測試理想圖片行為。**技巧**：使用瀏覽器的[網路節流](https://www.browserstack.com/guide/how-to-perform-network-throttling-in-chrome)模擬低速網路。 |
+
+```mdx-code-block
+</APITable>
+```
+
+### 配置範例 {#ex-config}
+
+以下為配置範例：
+
+```js title="docusaurus.config.js"
+export default {
+  plugins: [
+    [
+      '@docusaurus/plugin-ideal-image',
+      // highlight-start
+      {
+        quality: 70,
+        max: 1030, // 調整後圖片的最高尺寸
+        min: 640, // 調整後圖片的最低尺寸。若原始尺寸更小則採用原始尺寸
+        steps: 2, // 在 min 和 max 之間（含）生成的圖片最大數量
+        disableInDev: false,
+      },
+      // highlight-end
+    ],
+  ],
+};
+```

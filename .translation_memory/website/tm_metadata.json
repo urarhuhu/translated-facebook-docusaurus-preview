@@ -1,0 +1,132 @@
+{
+  "locales": [
+    "zh-hant"
+  ],
+  "folder_patterns": [
+    {
+      "source_dir_relative_to_docusaurus_root": "docs",
+      "target_i18n_subpath": "docusaurus-plugin-content-docs/current",
+      "original_agent_pattern": {
+        "source_pattern": "docs/**/*.{md,mdx}",
+        "translation_pattern": "i18n/%locale%/docusaurus-plugin-content-docs/current/**/%original_file_name%",
+        "type": "docs",
+        "description": "Documentation files for the 'current' (unreleased) version."
+      },
+      "type": "docs",
+      "description": "Documentation files for the 'current' (unreleased) version.",
+      "ignore_patterns": null
+    },
+    {
+      "source_dir_relative_to_docusaurus_root": "versioned_docs",
+      "target_i18n_subpath": "docusaurus-plugin-content-docs",
+      "original_agent_pattern": {
+        "source_pattern": "versioned_docs/version-*/**/*.{md,mdx}",
+        "translation_pattern": "i18n/%locale%/docusaurus-plugin-content-docs/**/%original_file_name%",
+        "type": "versioned_docs",
+        "description": "Documentation files for all versioned releases. The original version folder (e.g., 'version-3.5.2') is preserved in the translation path."
+      },
+      "type": "versioned_docs",
+      "description": "Documentation files for all versioned releases. The original version folder (e.g., 'version-3.5.2') is preserved in the translation path.",
+      "ignore_patterns": null
+    },
+    {
+      "source_dir_relative_to_docusaurus_root": "community",
+      "target_i18n_subpath": "docusaurus-plugin-content-docs-community/current",
+      "original_agent_pattern": {
+        "source_pattern": "community/**/*.{md,mdx}",
+        "translation_pattern": "i18n/%locale%/docusaurus-plugin-content-docs-community/current/**/%original_file_name%",
+        "type": "docs-community",
+        "description": "Documentation files for the 'community' section, from a custom docs plugin instance with id 'community'."
+      },
+      "type": "docs-community",
+      "description": "Documentation files for the 'community' section, from a custom docs plugin instance with id 'community'.",
+      "ignore_patterns": null
+    },
+    {
+      "source_dir_relative_to_docusaurus_root": "docs-tests",
+      "target_i18n_subpath": "docusaurus-plugin-content-docs-docs-tests/current",
+      "original_agent_pattern": {
+        "source_pattern": "docs-tests/**/*.{md,mdx}",
+        "translation_pattern": "i18n/%locale%/docusaurus-plugin-content-docs-docs-tests/current/**/%original_file_name%",
+        "type": "docs-docs-tests",
+        "description": "Documentation files for the 'docs-tests' section, inferred from a custom docs plugin instance with id 'docs-tests'."
+      },
+      "type": "docs-docs-tests",
+      "description": "Documentation files for the 'docs-tests' section, inferred from a custom docs plugin instance with id 'docs-tests'.",
+      "ignore_patterns": null
+    },
+    {
+      "source_dir_relative_to_docusaurus_root": "blog",
+      "target_i18n_subpath": "docusaurus-plugin-content-blog",
+      "original_agent_pattern": {
+        "source_pattern": "blog/**/*.{md,mdx}",
+        "translation_pattern": "i18n/%locale%/docusaurus-plugin-content-blog/**/%original_file_name%",
+        "type": "blog",
+        "description": "Main blog posts for the default blog instance."
+      },
+      "type": "blog",
+      "description": "Main blog posts for the default blog instance.",
+      "ignore_patterns": null
+    },
+    {
+      "source_dir_relative_to_docusaurus_root": "changelog",
+      "target_i18n_subpath": "changelog-plugin",
+      "original_agent_pattern": {
+        "source_pattern": "changelog/**/*.{md,mdx}",
+        "translation_pattern": "i18n/%locale%/changelog-plugin/**/%original_file_name%",
+        "type": "blog-changelog",
+        "description": "Content for the custom changelog plugin, which behaves like a blog. Source path 'changelog/' is inferred from configuration."
+      },
+      "type": "blog-changelog",
+      "description": "Content for the custom changelog plugin, which behaves like a blog. Source path 'changelog/' is inferred from configuration.",
+      "ignore_patterns": null
+    },
+    {
+      "source_dir_relative_to_docusaurus_root": "blog-tests",
+      "target_i18n_subpath": "docusaurus-plugin-content-blog-blog-tests",
+      "original_agent_pattern": {
+        "source_pattern": "blog-tests/**/*.{md,mdx}",
+        "translation_pattern": "i18n/%locale%/docusaurus-plugin-content-blog-blog-tests/**/%original_file_name%",
+        "type": "blog-blog-tests",
+        "description": "Blog posts for the 'blog-tests' instance, inferred from a custom blog plugin instance with id 'blog-tests'."
+      },
+      "type": "blog-blog-tests",
+      "description": "Blog posts for the 'blog-tests' instance, inferred from a custom blog plugin instance with id 'blog-tests'.",
+      "ignore_patterns": null
+    },
+    {
+      "source_dir_relative_to_docusaurus_root": "src/pages",
+      "target_i18n_subpath": "docusaurus-plugin-content-pages",
+      "original_agent_pattern": {
+        "source_pattern": "src/pages/**/*.{md,mdx}",
+        "translation_pattern": "i18n/%locale%/docusaurus-plugin-content-pages/**/%original_file_name%",
+        "type": "pages",
+        "description": "Standalone pages written in Markdown/MDX.",
+        "ignore_patterns": [
+          "**/*.{js,jsx,ts,tsx,css}"
+        ]
+      },
+      "type": "pages",
+      "description": "Standalone pages written in Markdown/MDX.",
+      "ignore_patterns": [
+        "**/*.{js,jsx,ts,tsx,css}"
+      ]
+    },
+    {
+      "source_dir_relative_to_docusaurus_root": "i18n/en",
+      "target_i18n_subpath": "",
+      "original_agent_pattern": {
+        "source_pattern": "i18n/en/**/*.json",
+        "translation_pattern": "i18n/%locale%/**/%original_file_name%",
+        "type": "json_translations",
+        "description": "JSON files for UI, theme, plugin labels, and sidebar translations. The source is the 'en' locale folder."
+      },
+      "type": "json_translations",
+      "description": "JSON files for UI, theme, plugin labels, and sidebar translations. The source is the 'en' locale folder.",
+      "ignore_patterns": null
+    }
+  ],
+  "docusaurus_root_dir_relative_to_repo": "website",
+  "docusaurus_config_filepath_relative_to_repo": "website/docusaurus.config.ts",
+  "source_language": "en"
+}

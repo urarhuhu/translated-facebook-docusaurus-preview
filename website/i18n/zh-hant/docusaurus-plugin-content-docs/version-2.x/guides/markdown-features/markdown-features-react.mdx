@@ -1,0 +1,574 @@
+---
+id: react
+description: Using the power of React in Docusaurus Markdown documents, thanks to MDX
+slug: /markdown-features/react
+---
+
+# MDX 與 React
+
+```mdx-code-block
+import BrowserWindow from '@site/src/components/BrowserWindow';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+import styles from './markdown-features-react.module.css';
+```
+
+## 在 Markdown 中使用 JSX {#using-jsx-in-markdown}
+
+Docusaurus 內建支援 [MDX v1](https://mdxjs.com/)，允許你在 Markdown 檔案中編寫 JSX 並將其渲染為 React 元件。
+
+:::note
+
+雖然 Docusaurus 使用 MDX 解析 `.md` 和 `.mdx` 檔案，但某些語法在第三方工具中的處理方式略有不同。為了獲得最準確的解析和更好的編輯器支援，我們建議對包含 MDX 語法的檔案使用 `.mdx` 副檔名。
+
+:::
+
+查看 [MDX 文件](https://mdxjs.com/) 以了解你還能用 MDX 實現哪些酷炫功能。
+
+### 匯出元件 {#exporting-components}
+
+要在 MDX 檔案中定義任何自訂元件，你必須將其匯出：只有以 `export` 開頭的段落才會被解析為元件而非普通文字。
+
+```jsx
+export const Highlight = ({children, color}) => (
+  <span
+    style={{
+      backgroundColor: color,
+      borderRadius: '2px',
+      color: '#fff',
+      padding: '0.2rem',
+    }}>
+    {children}
+  </span>
+);
+
+<Highlight color="#25c2a0">Docusaurus green</Highlight> and <Highlight color="#1877F2">Facebook blue</Highlight> are my favorite colors.
+
+I can write **Markdown** alongside my _JSX_!
+```
+
+請注意它如何同時渲染你的 React 元件的標記和 Markdown 語法：
+
+```mdx-code-block
+export const Highlight = ({children, color}) => (
+  <span
+    style={{
+      backgroundColor: color,
+      borderRadius: '2px',
+      color: '#fff',
+      padding: '0.2rem',
+    }}>
+    {children}
+  </span>
+);
+
+<BrowserWindow minHeight={240}>
+
+<><Highlight color="#25c2a0">Docusaurus green</Highlight>
+{` `}and <Highlight color="#1877F2">Facebook blue</Highlight> are my favorite colors.</>
+
+I can write **Markdown** alongside my _JSX_!
+
+</BrowserWindow>
+```
+
+:::warning[MDX 就是 JSX]
+
+由於所有文件都是使用 MDX 解析的，任何看起來像 HTML 的東西實際上都是 JSX。因此，如果你需要內聯樣式一個元件，請遵循 JSX 風格並提供樣式物件。
+
+{/* prettier-ignore */}
+```jsx
+/* 不要這樣做： */
+<span style="background-color: red">Foo</span>
+/* 應該這樣做： */
+<span style={{backgroundColor: 'red'}}>Foo</span>
+```
+
+這種行為與 Docusaurus 1 不同。另請參閱 [從 v1 遷移到 v2](../../migration/migration-manual.mdx)。
+
+此外，MDX 與 [CommonMark 並非 100% 相容](https://github.com/facebook/docusaurus/issues/3018)。使用 **[MDX 遊樂場](https://mdx-git-renovate-babel-monorepo-mdx.vercel.app/playground)** 確保你的語法是有效的 MDX。
+
+:::
+
+### 匯入元件 {#importing-components}
+
+你也可以匯入在其他檔案中定義的自訂元件，或透過 npm 安裝的第三方元件。
+
+```md
+<!-- Docusaurus theme component -->
+import TOCInline from '@theme/TOCInline';
+<!-- External component -->
+import Button from '@mui/material/Button';
+<!-- Custom component -->
+import BrowserWindow from '@site/src/components/BrowserWindow';
+```
+
+:::tip
+
+`@site` 別名指向你的網站目錄，通常是 `docusaurus.config.js` 檔案所在的位置。使用別名而非相對路徑（`'../../src/components/BrowserWindow'`）可以避免在移動檔案或進行[文件版本控制](../docs/versioning.mdx)和[翻譯](../../i18n/i18n-tutorial.mdx)時更新匯入路徑。
+
+:::
+
+雖然在 Markdown 中宣告元件對於簡單情況非常方便，但由於編輯器支援有限、解析錯誤的風險和低可重用性，維護起來會變得困難。當你的元件涉及複雜的 JS 邏輯時，請使用單獨的 `.js` 檔案：
+
+```jsx title="src/components/Highlight.js"
+import React from 'react';
+
+export default function Highlight({children, color}) {
+  return (
+    <span
+      style={{
+        backgroundColor: color,
+        borderRadius: '2px',
+        color: '#fff',
+        padding: '0.2rem',
+      }}>
+      {children}
+    </span>
+  );
+}
+```
+
+```md title="markdown-file.mdx"
+import Highlight from '@site/src/components/Highlight';
+
+<Highlight color="#25c2a0">Docusaurus green</Highlight>
+```
+
+:::tip
+
+如果你在多個檔案中使用相同的元件，不需要在每個地方都匯入它——考慮將其添加到全域範圍。[參見下文](#mdx-component-scope)
+
+:::
+
+### MDX 元件作用域 {#mdx-component-scope}
+
+除了[匯入元件](#importing-components)和[匯出元件](#exporting-components)之外，第三種在 MDX 中使用元件的方法是**將其註冊到全域作用域**，這將使其自動在所有 MDX 檔案中可用，無需任何匯入語句。
+
+例如，給定這個 MDX 檔案：
+
+```md
+- a
+- list!
+
+And some <Highlight>custom markup</Highlight>...
+```
+
+它將被編譯為包含 `ul`、`li`、`p` 和 `Highlight` 元素的 React 元件。`Highlight` 不是原生的 html 元素：你需要為其提供自己的 React 元件實現。
+
+在 Docusaurus 中，MDX 元件作用域由 `@theme/MDXComponents` 檔案提供。嚴格來說，它並非 React 元件（與大多數 `@theme/` 別名下的匯出不同），而是一個從標籤名稱（如 `Highlight`）映射到其實作 React 元件的記錄。
+
+如果您[替換](../../swizzling.mdx)此元件，將會看到所有已實作的標籤，並可透過替換相應子元件（如 `@theme/MDXComponents/Code`，用於渲染[Markdown 程式碼區塊](./markdown-features-code-blocks.mdx)）進一步自訂我們的實作。
+
+若需註冊額外標籤名稱（如上述 `<Highlight>` 標籤），建議考慮[包裝 `@theme/MDXComponents`](../../swizzling.mdx#wrapping)，這樣就不需維護所有現有映射。由於替換 CLI 尚不支援包裝非元件檔案，您需手動建立包裝器：
+
+```js title="src/theme/MDXComponents.js"
+import React from 'react';
+// Import the original mapper
+import MDXComponents from '@theme-original/MDXComponents';
+// highlight-next-line
+import Highlight from '@site/src/components/Highlight';
+
+export default {
+  // Re-use the default mapping
+  ...MDXComponents,
+  // Map the "<Highlight>" tag to our Highlight component
+  // `Highlight` will receive all props that were passed to `<Highlight>` in MDX
+  // highlight-next-line
+  Highlight,
+};
+```
+
+現在，您可以在每個頁面中自由使用 `<Highlight>`，而無需撰寫匯入語句：
+
+```md
+I can conveniently use <Highlight color="#25c2a0">Docusaurus green</Highlight> everywhere!
+```
+
+```mdx-code-block
+<BrowserWindow>
+
+I can conveniently use <Highlight color="#25c2a0">Docusaurus green</Highlight> everywhere!
+
+</BrowserWindow>
+```
+
+:::warning
+
+我們刻意使用**大寫**標籤名稱（如 `Highlight`）。
+
+從 MDX v2+ 開始（Docusaurus v3+），小寫標籤名稱將始終渲染為原生 HTML 元素，且不會使用您提供的任何元件映射。
+
+:::
+
+:::warning
+
+此功能由[包裝提供者](https://mdx-git-renovate-babel-monorepo-mdx.vercel.app/advanced/components#mdxprovider)驅動。若在 React 頁面中匯入 Markdown，您需透過 `MDXContent` 主題元件自行提供此包裝器。
+
+```jsx title="src/pages/index.js"
+import React from 'react';
+import FeatureDisplay from './_featureDisplay.mdx';
+// highlight-next-line
+import MDXContent from '@theme/MDXContent';
+
+export default function LandingPage() {
+  return (
+    <div>
+      {/* highlight-start */}
+      <MDXContent>
+        <FeatureDisplay />
+      </MDXContent>
+      {/* highlight-end */}
+    </div>
+  );
+}
+```
+
+若未用 `MDXContent` 包裝匯入的 MDX，全域作用域將無法使用。
+
+:::
+
+### Markdown 與 JSX 的互通性 {#markdown-and-jsx-interoperability}
+
+Docusaurus v2 使用 MDX v1，存在許多已知情況會導致內容無法正確解析為 Markdown。請使用 **[MDX 遊樂場](https://mdx-git-renovate-babel-monorepo-mdx.vercel.app/playground)** 確保您的語法是有效的 MDX。
+
+<details>
+<summary>Samples of parsing failures</summary>
+
+**A paragraph starting with a JSX tag will be seen entirely as a JSX string:**
+
+```mdx-code-block
+<Tabs groupId="jsx-and-md">
+<TabItem value="Problem">
+<div className={styles.wrappingBlock}>
+```
+
+```jsx
+<span style={{color: 'red'}}>Highlighted text</span> but afterwards _Markdown_ **doesn't work**
+```
+
+```mdx-code-block
+</div>
+<div className={styles.wrappingBlock}>
+<BrowserWindow>
+
+<span style={{color: 'red'}}>Highlighted text</span> but afterwards _Markdown_ **doesn't work**
+
+</BrowserWindow>
+</div>
+</TabItem>
+<TabItem value="Workaround">
+
+Use JSX for the rest of the line, or prefix the line with some plain text:
+
+<div className={styles.wrappingBlock}>
+```
+
+```jsx
+<span style={{color: 'red'}}>Use JSX for the paragraph</span> to stop <i>worrying about</i> <b>Markdown</b>
+
+&#8203;<span style={{color: 'red'}}>← This is a zero-width space</span> and afterwards <i>Markdown</i> <b>works</b>
+```
+
+```mdx-code-block
+</div>
+<div className={styles.wrappingBlock}>
+<BrowserWindow>
+
+<span style={{color: 'red'}}>Use JSX for the paragraph</span> to stop <i>worrying about</i> <b>Markdown</b>
+
+&#8203;<span style={{color: 'red'}}>← This is a zero-width space</span> and afterwards <i>Markdown</i> <b>works</b>
+
+</BrowserWindow>
+</div>
+</TabItem>
+</Tabs>
+
+**Markdown within a JSX tag never works:**
+
+<Tabs groupId="jsx-and-md">
+<TabItem value="Problem">
+<div className={styles.wrappingBlock}>
+```
+
+```jsx
+<span style={{color: 'red'}}>**Bold doesn't work**</span>
+```
+
+```mdx-code-block
+</div>
+<div className={styles.wrappingBlock}>
+<BrowserWindow>
+
+<span style={{color: 'red'}}>**Bold doesn't work**</span>
+
+</BrowserWindow>
+</div>
+
+</TabItem>
+<TabItem value="Workaround">
+
+Use JSX within JSX tag, or move the Markdown to the outer layer:
+
+<div className={styles.wrappingBlock}>
+```
+
+```jsx
+<span style={{color: 'red'}}><b>Bold now works</b></span>
+
+**<span style={{color: 'red'}}>Bold now works</span>**
+```
+
+```mdx-code-block
+</div>
+<div className={styles.wrappingBlock}>
+<BrowserWindow>
+
+<span style={{color: 'red'}}><b>Bold now works</b></span>
+
+**<span style={{color: 'red'}}>Bold now works</span>**
+
+</BrowserWindow>
+</div>
+</TabItem>
+</Tabs>
+
+**Text immediately below a JSX tag will be seen as JSX text:**
+
+<Tabs groupId="jsx-and-md">
+<TabItem value="Problem">
+<div className={styles.wrappingBlock}>
+```
+
+{/* prettier-ignore */}
+```jsx
+<div style={{color: 'red'}}>
+**Bold still doesn't work**
+</div>
+```
+
+```mdx-code-block
+</div>
+<div className={styles.wrappingBlock}>
+<BrowserWindow>
+
+<div style={{color: 'red'}}>
+**Bold still doesn't work**
+</div>
+
+</BrowserWindow>
+</div>
+</TabItem>
+<TabItem value="Workaround">
+
+Add an empty new line:
+
+<div className={styles.wrappingBlock}>
+```
+
+{/* prettier-ignore */}
+```jsx
+<div style={{color: 'red'}}>
+
+**Bold now works**
+
+</div>
+```
+
+```mdx-code-block
+</div>
+<div className={styles.wrappingBlock}>
+<BrowserWindow>
+<div style={{color: 'red'}}>
+
+**Bold now works**
+
+</div>
+</BrowserWindow>
+</div>
+</TabItem>
+</Tabs>
+
+**Markdown text indented by four spaces will be seen as a code block:**
+
+<Tabs groupId="jsx-and-md">
+<TabItem value="Problem">
+<div className={styles.wrappingBlock}>
+```
+
+{/* prettier-ignore */}
+```jsx
+<div style={{color: 'red'}}>
+
+    You may think I'm just some text...
+
+</div>
+```
+
+```mdx-code-block
+</div>
+<div className={styles.wrappingBlock}>
+<BrowserWindow>
+
+<div style={{color: 'red'}}>
+
+    You may think I'm just some text...
+
+</div>
+
+</BrowserWindow>
+</div>
+</TabItem>
+<TabItem value="Workaround">
+
+Don't indent:
+
+<div className={styles.wrappingBlock}>
+```
+
+{/* prettier-ignore */}
+```jsx
+<div style={{color: 'red'}}>
+
+Now I'm actually just text
+
+</div>
+```
+
+```mdx-code-block
+</div>
+<div className={styles.wrappingBlock}>
+<BrowserWindow>
+<div style={{color: 'red'}}>
+
+Now I'm actually just text
+
+</div>
+</BrowserWindow>
+</div>
+</TabItem>
+</Tabs>
+```
+
+</details>
+
+## 匯入程式碼片段 {#importing-code-snippets}
+
+您不僅可以匯入包含元件定義的檔案，還能透過 [Webpack raw-loader](https://webpack.js.org/loaders/raw-loader/) 將任何程式碼檔案作為原始文字匯入，並插入至程式碼區塊中。要使用 `raw-loader`，需先在專案中安裝：
+
+```bash npm2yarn
+npm install --save raw-loader
+```
+
+現在您可以從其他檔案原樣匯入程式碼片段：
+
+```jsx title="myMarkdownFile.mdx"
+import CodeBlock from '@theme/CodeBlock';
+import MyComponentSource from '!!raw-loader!./myComponent';
+
+<CodeBlock language="jsx">{MyComponentSource}</CodeBlock>
+```
+
+```mdx-code-block
+import CodeBlock from '@theme/CodeBlock';
+import MyComponentSource from '!!raw-loader!@site/src/pages/examples/_myComponent';
+
+<BrowserWindow>
+
+<CodeBlock language="jsx">{MyComponentSource}</CodeBlock>
+
+</BrowserWindow>
+```
+
+詳見 [JSX 中的程式碼區塊用法](./markdown-features-code-blocks.mdx#usage-in-jsx) 以瞭解 `<CodeBlock>` 元件的更多細節。
+
+:::note
+
+您必須使用 `<CodeBlock>` 而非 Markdown 的三重反引號 ` ``` `，因為後者會直接輸出其內容，而此處您需要插入匯入的文字。
+
+:::
+
+:::warning
+
+此功能為實驗性質，未來可能會有破壞性 API 變更。
+
+:::
+
+## 匯入 Markdown {#importing-markdown}
+
+您可以將 Markdown 檔案作為元件使用，並在其他 Markdown 檔案或 React 頁面中匯入它們。
+
+依照慣例，使用 **`_` 檔案名前綴** 不會建立任何文件頁面，表示該 Markdown 檔案是一個**「部分」**內容，將被其他檔案導入使用。
+
+```md title="_markdown-partial-example.mdx"
+<span>Hello {props.name}</span>
+
+This is text some content from `_markdown-partial-example.mdx`.
+```
+
+```jsx title="someOtherDoc.mdx"
+import PartialExample from './_markdown-partial-example.mdx';
+
+<PartialExample name="Sebastien" />
+```
+
+```mdx-code-block
+import PartialExample from './_markdown-partial-example.mdx';
+
+<BrowserWindow>
+  <PartialExample name="Sebastien" />
+</BrowserWindow>
+```
+
+透過這種方式，您可以在多個頁面間重複使用內容，避免材料重複。
+
+:::warning
+
+目前，目錄不包含導入的 Markdown 標題。這是一個我們正嘗試解決的技術限制 ([issue](https://github.com/facebook/docusaurus/issues/3915))。
+
+:::
+
+## 可用導出項目 {#available-exports}
+
+在 MDX 頁面中，以下變數可作為全域變數使用：
+
+- `frontMatter`: 前頁資料（front matter），以字串鍵值對的形式記錄；
+- `toc`: 目錄，以標題樹狀結構呈現。另請參閱 [行內目錄](./markdown-features-toc.mdx#inline-table-of-contents) 以了解更具體的應用場景。
+- `contentTitle`: Markdown 標題，即 Markdown 文字中的第一個 `h1` 標題。如果不存在（例如在前頁資料中指定了標題），則為 `undefined`。
+
+```jsx
+import TOCInline from '@theme/TOCInline';
+import CodeBlock from '@theme/CodeBlock';
+
+The table of contents for this page, serialized:
+
+<CodeBlock className="language-json">{JSON.stringify(toc, null, 2)}</CodeBlock>
+
+The front matter of this page:
+
+<ul>
+  {Object.entries(frontMatter).map(([key, value]) => <li key={key}><b>{key}</b>: {value}</li>)}
+</ul>
+
+<p>The title of this page is: <b>{contentTitle}</b></p>
+```
+
+```mdx-code-block
+import TOCInline from '@theme/TOCInline';
+
+<BrowserWindow>
+
+The table of contents for this page, serialized:
+
+<CodeBlock className="language-json">{JSON.stringify(toc, null, 2)}</CodeBlock>
+
+The front matter of this page:
+
+<ul>
+  {Object.entries(frontMatter).map(([key, value]) => <li key={key}><b>{key}</b>: {value}</li>)}
+</ul>
+
+<p>The title of this page is: <b>{contentTitle}</b></p>
+
+</BrowserWindow>
+```
